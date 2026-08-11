@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Department {
+  AM
+  RM
+  TN
+  Audit
+}
+
+enum EligibilityResult {
+  ELIGIBLE
+  NOT_ELIGIBLE
+}
+
+enum StatusFlag {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum ApproverAction {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Branch {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  lat          Float
+  lng          Float
+  budgetPerNight Int    @default(560)
+  isNewBranch  Boolean  @default(false)
+  openDate     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  hotels             Hotel[]
+  employeesAtHome    Employee[] @relation("StoreCenterBranch")
+  requestsAsDestination Request[] @relation("DestinationBranch")
+  requestsAsStoreCenter Request[] @relation("StoreCenterBranchOnRequest")
+}
+
+model Hotel {
+  id             String   @id @default(cuid())
+  branchId       String
+  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  name           String
+  lat            Float?
+  lng            Float?
+  distanceKm     Float?
+  pricePerNight  Int?
+  recommendLevel Int      @default(3)
+  note           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  requests Request[]
+
+  @@index([branchId])
+}
+
+model Employee {
+  id                  String     @id @default(cuid())
+  code                String     @unique
+  name                String
+  department          Department
+  amTeam              String?
+  codeNickname         String?
+  storeCenterBranchId String?
+  storeCenterBranch   Branch?    @relation("StoreCenterBranch", fields: [storeCenterBranchId], references: [id])
+  hasCompanyCar       Boolean    @default(false)
+  email               String?    @unique
+  firebaseUid         String?    @unique
+  createdAt           DateTime   @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  requests Request[]
+}
+
+model Approver {
+  id         String         @id @default(cuid())
+  department Department     @unique
+  nickname   String
+  fullName   String?
+  email      String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  requests Request[]
+}
+
+model Request {
+  id            String   @id @default(cuid())
+  requestCode   String   @unique
+  requestDate   DateTime @default(now())
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  department Department
+
+  destinationBranchId String
+  destinationBranch   Branch @relation("DestinationBranch", fields: [destinationBranchId], references: [id])
+
+  hasCompanyCar Boolean
+
+  storeCenterBranchId String?
+  storeCenterBranch   Branch? @relation("StoreCenterBranchOnRequest", fields: [storeCenterBranchId], references: [id])
+
+  distanceKm          Float?
+  distanceCheckPassed Boolean?
+
+  isAmTnTwoShift             Boolean?
+  isAmTwoBranchesSimultaneous Boolean?
+  hasOtherReason             Boolean?
+  otherReasonText            String?
+
+  eligibilityResult EligibilityResult?
+
+  selectedHotelId String?
+  selectedHotel   Hotel?  @relation(fields: [selectedHotelId], references: [id])
+  otherHotelName  String?
+
+  bookingLink   String?
+  pricePerNight Int?
+  checkInDate   DateTime?
+  checkOutDate  DateTime?
+
+  isHotelInMasterList Boolean?
+  budgetPerNight       Int?
+  priceDiff            Int?
+  guestWillingToPayDiff Boolean?
+
+  statusFlag StatusFlag?
+
+  approverId     String?
+  approver       Approver? @relation(fields: [approverId], references: [id])
+  approverAction ApproverAction @default(PENDING)
+  approverComment String?
+  approverActionAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([approverId])
+  @@index([approverAction])
+}
