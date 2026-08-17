@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     department: employee.department,
     hasCompanyCar: employee.hasCompanyCar,
     distanceKm,
+    isTravelTimeOverOneHour: body?.isTravelTimeOverOneHour,
     isAmTnTwoShift: body?.isAmTnTwoShift,
     isAmTwoBranchesSimultaneous: body?.isAmTwoBranchesSimultaneous,
     hasOtherReason: body?.hasOtherReason,

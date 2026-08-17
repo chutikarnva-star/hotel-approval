@@ -13,12 +13,15 @@ interface ApprovalRow {
   destinationBranch: { name: string };
   selectedHotel: { name: string } | null;
   otherHotelName: string | null;
-  bookingLink: string | null;
+  choowapBookedAt: string | null;
+  choowapBookingCode: string | null;
   pricePerNight: number | null;
   budgetPerNight: number | null;
   priceDiff: number | null;
   guestWillingToPayDiff: boolean | null;
   otherReasonText: string | null;
+  isTravelTimeOverOneHour: boolean | null;
+  travelTimeEvidenceUrl: string | null;
   checkInDate: string | null;
   checkOutDate: string | null;
   statusFlag: "GREEN" | "YELLOW" | "RED" | null;
@@ -104,12 +107,9 @@ function ApprovalsList() {
             สาขา: {r.destinationBranch.name}
             <br />
             โรงแรม: {r.selectedHotel?.name ?? r.otherHotelName ?? "-"}
-            {r.bookingLink && (
-              <>
-                {" "}
-                (<a href={r.bookingLink} target="_blank" rel="noreferrer">ลิงก์การจอง</a>)
-              </>
-            )}
+            <br />
+            จองใน Choowap: {r.choowapBookedAt ? new Date(r.choowapBookedAt).toLocaleString("th-TH") : "-"}
+            {r.choowapBookingCode && ` · เลขที่การจอง ${r.choowapBookingCode}`}
             <br />
             ราคา {r.pricePerNight ?? "-"} บาท/คืน · งบ {r.budgetPerNight ?? "-"} บาท
             {r.priceDiff ? ` · เกินงบ ${r.priceDiff} บาท (${r.guestWillingToPayDiff ? "ยินดีจ่ายส่วนต่าง" : "ยังไม่ยืนยัน"})` : ""}
@@ -119,6 +119,15 @@ function ApprovalsList() {
               <>
                 <br />
                 เหตุผลอื่น: {r.otherReasonText}
+              </>
+            )}
+            {r.isTravelTimeOverOneHour && r.travelTimeEvidenceUrl && (
+              <>
+                <br />
+                เดินทางเกิน 1 ชม.:{" "}
+                <a href={r.travelTimeEvidenceUrl} target="_blank" rel="noreferrer">
+                  ตรวจสอบใน Google Maps
+                </a>
               </>
             )}
           </p>

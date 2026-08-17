@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
   const auth = await requireAuthUser(request);
@@ -8,16 +9,24 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
+  const assigneeType = searchParams.get("assigneeType");
+  const assignee = searchParams.get("assignee")?.trim();
+
+  const where: Prisma.BranchWhereInput = {};
+  if (q) {
+    where.OR = [
+      { code: { contains: q, mode: "insensitive" } },
+      { name: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  if (assignee && assigneeType === "RM") {
+    where.rmAssignee = assignee;
+  } else if (assignee && assigneeType === "AM") {
+    where.amAssignee = assignee;
+  }
 
   const branches = await prisma.branch.findMany({
-    where: q
-      ? {
-          OR: [
-            { code: { contains: q, mode: "insensitive" } },
-            { name: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
+    where: Object.keys(where).length ? where : undefined,
     orderBy: { name: "asc" },
     take: q ? 50 : 500,
   });

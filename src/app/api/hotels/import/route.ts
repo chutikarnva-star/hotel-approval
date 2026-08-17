@@ -5,7 +5,8 @@ import { parseCsv, toNumberOrNull } from "@/lib/csv";
 import { computeRecommendLevel } from "@/lib/hotelLevel";
 
 // Expected CSV headers: branchCode,name,lat,lng,distanceKm,pricePerNight,note
-// This appends hotels (a branch can have several) - it does not replace existing rows.
+// Upserts on (branchCode, name) - re-importing the same sheet updates existing rows
+// instead of duplicating them.
 export async function POST(request: Request) {
   const auth = await requireAuthUser(request);
   if (auth instanceof Response) return auth;
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
   const branchByCode = new Map(branches.map((b) => [b.code, b.id]));
 
   let created = 0;
+  let updated = 0;
   const errors: string[] = [];
 
   for (const [i, row] of rows.entries()) {
@@ -34,21 +36,24 @@ export async function POST(request: Request) {
 
     const distanceKm = toNumberOrNull(row.distanceKm);
     const pricePerNight = toNumberOrNull(row.pricePerNight);
+    const data = {
+      lat: toNumberOrNull(row.lat),
+      lng: toNumberOrNull(row.lng),
+      distanceKm,
+      pricePerNight,
+      recommendLevel: computeRecommendLevel(distanceKm, pricePerNight),
+      note: row.note?.trim() || null,
+    };
 
-    await prisma.hotel.create({
-      data: {
-        branchId,
-        name,
-        lat: toNumberOrNull(row.lat),
-        lng: toNumberOrNull(row.lng),
-        distanceKm,
-        pricePerNight,
-        recommendLevel: computeRecommendLevel(distanceKm, pricePerNight),
-        note: row.note?.trim() || null,
-      },
+    const existing = await prisma.hotel.findUnique({ where: { branchId_name: { branchId, name } } });
+    await prisma.hotel.upsert({
+      where: { branchId_name: { branchId, name } },
+      create: { branchId, name, ...data },
+      update: data,
     });
-    created++;
+    if (existing) updated++;
+    else created++;
   }
 
-  return NextResponse.json({ created, errors });
+  return NextResponse.json({ created, updated, errors });
 }

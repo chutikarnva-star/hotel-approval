@@ -25,6 +25,8 @@ function NewRequestForm() {
   const router = useRouter();
 
   const [branch, setBranch] = useState<BranchLite | null>(null);
+  const [isTravelTimeOverOneHour, setIsTravelTimeOverOneHour] = useState<boolean | null>(null);
+  const [travelTimeEvidenceUrl, setTravelTimeEvidenceUrl] = useState("");
   const [isAmTnTwoShift, setIsAmTnTwoShift] = useState<boolean | null>(null);
   const [isAmTwoBranchesSimultaneous, setIsAmTwoBranchesSimultaneous] = useState<boolean | null>(null);
   const [hasOtherReason, setHasOtherReason] = useState<boolean | null>(null);
@@ -38,7 +40,7 @@ function NewRequestForm() {
   const [useOtherHotel, setUseOtherHotel] = useState(false);
   const [otherHotelName, setOtherHotelName] = useState("");
 
-  const [bookingLink, setBookingLink] = useState("");
+  const [choowapBookedAt, setChoowapBookedAt] = useState("");
   const [pricePerNight, setPricePerNight] = useState("");
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
@@ -58,7 +60,7 @@ function NewRequestForm() {
     }
     runCheck();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branch, isAmTnTwoShift, isAmTwoBranchesSimultaneous, hasOtherReason]);
+  }, [branch, isTravelTimeOverOneHour, isAmTnTwoShift, isAmTwoBranchesSimultaneous, hasOtherReason]);
 
   useEffect(() => {
     if (checkResult?.eligibility.eligible && branch) {
@@ -76,6 +78,7 @@ function NewRequestForm() {
       method: "POST",
       body: JSON.stringify({
         destinationBranchCode: branch.code,
+        isTravelTimeOverOneHour,
         isAmTnTwoShift,
         isAmTwoBranchesSimultaneous,
         hasOtherReason,
@@ -99,13 +102,15 @@ function NewRequestForm() {
       method: "POST",
       body: JSON.stringify({
         destinationBranchCode: branch?.code,
+        isTravelTimeOverOneHour,
+        travelTimeEvidenceUrl,
         isAmTnTwoShift,
         isAmTwoBranchesSimultaneous,
         hasOtherReason,
         otherReasonText,
         selectedHotelId: useOtherHotel ? null : selectedHotelId,
         otherHotelName: useOtherHotel ? otherHotelName : null,
-        bookingLink,
+        choowapBookedAt,
         pricePerNight: pricePerNight ? Number(pricePerNight) : null,
         checkInDate,
         checkOutDate,
@@ -125,6 +130,7 @@ function NewRequestForm() {
   const showQuestions = eligibility && !eligibility.distanceCheckPassed;
   const noReasonGivenYet =
     showQuestions &&
+    isTravelTimeOverOneHour == null &&
     isAmTnTwoShift == null &&
     isAmTwoBranchesSimultaneous == null &&
     hasOtherReason == null;
@@ -132,8 +138,9 @@ function NewRequestForm() {
   const canProceedToHotel = eligibility?.eligible === true;
   const canSubmit =
     canProceedToHotel &&
+    (!isTravelTimeOverOneHour || travelTimeEvidenceUrl.trim()) &&
     (selectedHotelId || (useOtherHotel && otherHotelName.trim())) &&
-    bookingLink.trim() &&
+    choowapBookedAt &&
     pricePerNight &&
     checkInDate &&
     checkOutDate &&
@@ -170,21 +177,39 @@ function NewRequestForm() {
         <div className="card">
           <p className="field-hint">ระยะทางไม่ถึงเกณฑ์ กรุณาตอบคำถามเพิ่มเติมเพื่อตรวจสอบสิทธิ์</p>
 
-          {needsTwoShiftQuestion && (
+          <label>เดินทางจาก Store Center ไปสาขาที่จะไปทำงาน ใช้เวลาเกิน 1 ชั่วโมงหรือไม่?</label>
+          <YesNo value={isTravelTimeOverOneHour} onChange={setIsTravelTimeOverOneHour} />
+          {isTravelTimeOverOneHour && (
             <>
-              <label>ทีม AM/TN นี้มี 2 คนคนละกะกันหรือไม่?</label>
+              <label>แนบลิงก์ Google Maps ประกอบการตรวจสอบ</label>
+              <input
+                value={travelTimeEvidenceUrl}
+                onChange={(e) => setTravelTimeEvidenceUrl(e.target.value)}
+                placeholder="https://www.google.com/maps/dir/..."
+              />
+              <p className="field-hint">
+                ลิงก์ต้องแสดงต้นทางเป็น Store Center ของคุณ ปลายทางเป็นสาขาที่จะไปทำงาน
+                และเวลาเดินทางเกิน 60 นาที — ผู้อนุมัติจะเปิดตรวจสอบก่อนอนุมัติ
+              </p>
+            </>
+          )}
+
+          {isTravelTimeOverOneHour === false && needsTwoShiftQuestion && (
+            <>
+              <label>{department === "AM" ? "ทีม AM 2 คนทำงานคนละกะกันหรือไม่" : "ทีม TN ทำงานคนละกะกันหรือไม่"}</label>
               <YesNo value={isAmTnTwoShift} onChange={setIsAmTnTwoShift} />
             </>
           )}
 
-          {needsTwoBranchQuestion && isAmTnTwoShift === false && (
+          {isTravelTimeOverOneHour === false && needsTwoBranchQuestion && isAmTnTwoShift === false && (
             <>
               <label>เปิด 2 สาขาพร้อมกันหรือไม่?</label>
               <YesNo value={isAmTwoBranchesSimultaneous} onChange={setIsAmTwoBranchesSimultaneous} />
             </>
           )}
 
-          {(!needsTwoShiftQuestion || isAmTnTwoShift === false) &&
+          {isTravelTimeOverOneHour === false &&
+            (!needsTwoShiftQuestion || isAmTnTwoShift === false) &&
             (!needsTwoBranchQuestion || isAmTwoBranchesSimultaneous === false) && (
               <>
                 <label>มีเหตุผลอื่นที่จำเป็นไหม?</label>
@@ -249,8 +274,13 @@ function NewRequestForm() {
       {canProceedToHotel && (
         <div className="card">
           <h3>รายละเอียดการจอง</h3>
-          <label>ลิงก์/เลขที่การจองใน Choowap</label>
-          <input value={bookingLink} onChange={(e) => setBookingLink(e.target.value)} />
+          <label>วันที่-เวลาที่จองใน Choowap</label>
+          <input
+            type="datetime-local"
+            value={choowapBookedAt}
+            onChange={(e) => setChoowapBookedAt(e.target.value)}
+          />
+          <p className="field-hint">ดูจากคอลัมน์ &quot;วันที่จอง&quot; ในหน้ารายการจองของ Choowap</p>
 
           <label>ราคา/คืน (บาท)</label>
           <input type="number" value={pricePerNight} onChange={(e) => setPricePerNight(e.target.value)} />

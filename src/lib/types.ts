@@ -28,6 +28,6 @@ export interface EligibilityResponse {
     distanceThresholdKm: number;
     distanceCheckPassed: boolean;
     eligible: boolean;
-    path: "distance" | "two_shift" | "two_branch" | "other_reason" | "none";
+    path: "distance" | "travel_time" | "two_shift" | "two_branch" | "other_reason" | "none";
   };
 }

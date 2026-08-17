@@ -51,6 +51,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "กรุณาระบุเหตุผลอื่น" }, { status: 400 });
   }
 
+  if (body.isTravelTimeOverOneHour && !body.travelTimeEvidenceUrl?.trim()) {
+    return NextResponse.json({ error: "กรุณาแนบลิงก์ Google Maps ประกอบการตรวจสอบเวลาเดินทาง" }, { status: 400 });
+  }
+
   if (!body.selectedHotelId && !body.otherHotelName?.trim()) {
     return NextResponse.json({ error: "กรุณาเลือกโรงแรมหรือระบุชื่อโรงแรม" }, { status: 400 });
   }
@@ -66,6 +70,7 @@ export async function POST(request: Request) {
     department: employee.department,
     hasCompanyCar: employee.hasCompanyCar,
     distanceKm,
+    isTravelTimeOverOneHour: body.isTravelTimeOverOneHour,
     isAmTnTwoShift: body.isAmTnTwoShift,
     isAmTwoBranchesSimultaneous: body.isAmTwoBranchesSimultaneous,
     hasOtherReason: body.hasOtherReason,
@@ -111,6 +116,8 @@ export async function POST(request: Request) {
       storeCenterBranchId: employee.storeCenterBranch.id,
       distanceKm,
       distanceCheckPassed: eligibility.distanceCheckPassed,
+      isTravelTimeOverOneHour: body.isTravelTimeOverOneHour ?? null,
+      travelTimeEvidenceUrl: body.travelTimeEvidenceUrl?.trim() || null,
       isAmTnTwoShift: body.isAmTnTwoShift ?? null,
       isAmTwoBranchesSimultaneous: body.isAmTwoBranchesSimultaneous ?? null,
       hasOtherReason: body.hasOtherReason ?? null,
@@ -118,7 +125,7 @@ export async function POST(request: Request) {
       eligibilityResult: "ELIGIBLE",
       selectedHotelId: selectedHotel?.id ?? null,
       otherHotelName: selectedHotel ? null : body.otherHotelName?.trim() || null,
-      bookingLink: body.bookingLink?.trim() || null,
+      choowapBookedAt: body.choowapBookedAt ? new Date(body.choowapBookedAt) : null,
       pricePerNight,
       checkInDate: body.checkInDate ? new Date(body.checkInDate) : null,
       checkOutDate: body.checkOutDate ? new Date(body.checkOutDate) : null,

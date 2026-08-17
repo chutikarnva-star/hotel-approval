@@ -28,6 +28,9 @@ export function computeStatusFlag(input: StatusFlagInput): StatusFlagOutput {
   if (input.eligibilityPath === "other_reason") {
     return { flag: "YELLOW", reason: "ผ่านเกณฑ์ด้วยเหตุผลอื่น ต้องตรวจสอบเหตุผล" };
   }
+  if (input.eligibilityPath === "travel_time") {
+    return { flag: "YELLOW", reason: "ผ่านเกณฑ์ด้วยเวลาเดินทางเกิน 1 ชม. ต้องตรวจสอบหลักฐาน Google Maps" };
+  }
   if (input.priceDiff != null && input.priceDiff > 0) {
     return { flag: "YELLOW", reason: `ราคาเกินงบ ${input.priceDiff} บาท/คืน` };
   }

@@ -8,10 +8,16 @@ export default function CsvImport({
   importUrl,
   expectedHeaders,
   onImported,
+  title = "นำเข้าจาก CSV",
+  accept = ".csv",
+  hint,
 }: {
   importUrl: string;
-  expectedHeaders: string;
+  expectedHeaders?: string;
   onImported: () => void;
+  title?: string;
+  accept?: string;
+  hint?: string;
 }) {
   const { idToken } = useAuth();
   const [csvText, setCsvText] = useState("");
@@ -39,9 +45,9 @@ export default function CsvImport({
 
   return (
     <div className="card">
-      <h3>นำเข้าจาก CSV</h3>
-      <p className="field-hint">คอลัมน์ที่ต้องมี: {expectedHeaders}</p>
-      <input type="file" accept=".csv" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+      <h3>{title}</h3>
+      <p className="field-hint">{hint ?? `คอลัมน์ที่ต้องมี: ${expectedHeaders}`}</p>
+      <input type="file" accept={accept} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
       <textarea
         rows={6}
         placeholder="หรือวางเนื้อหา CSV ที่นี่"

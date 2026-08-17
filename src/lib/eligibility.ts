@@ -5,6 +5,7 @@ export const DISTANCE_THRESHOLD_KM_NO_CAR = 15;
 
 export type EligibilityPath =
   | "distance"
+  | "travel_time"
   | "two_shift"
   | "two_branch"
   | "other_reason"
@@ -14,6 +15,7 @@ export interface EligibilityInput {
   department: Department;
   hasCompanyCar: boolean;
   distanceKm: number;
+  isTravelTimeOverOneHour?: boolean | null;
   isAmTnTwoShift?: boolean | null;
   isAmTwoBranchesSimultaneous?: boolean | null;
   hasOtherReason?: boolean | null;
@@ -27,9 +29,9 @@ export interface EligibilityOutput {
 }
 
 /**
- * Mirrors the approval-workflow flowchart: a distance check first, then
- * (only if that fails) role-specific fallbacks in a fixed order, ending in
- * a free-text "other reason" catch-all.
+ * Mirrors the approval-workflow flowchart: a distance (km) check first, then
+ * a travel-time (>1hr) fallback, then (only if both fail) role-specific
+ * fallbacks in a fixed order, ending in a free-text "other reason" catch-all.
  */
 export function computeEligibility(input: EligibilityInput): EligibilityOutput {
   const distanceThresholdKm = input.hasCompanyCar
@@ -39,6 +41,10 @@ export function computeEligibility(input: EligibilityInput): EligibilityOutput {
 
   if (distanceCheckPassed) {
     return { distanceThresholdKm, distanceCheckPassed, eligible: true, path: "distance" };
+  }
+
+  if (input.isTravelTimeOverOneHour === true) {
+    return { distanceThresholdKm, distanceCheckPassed, eligible: true, path: "travel_time" };
   }
 
   if (

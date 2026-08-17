@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -40,6 +41,8 @@ model Branch {
   budgetPerNight Int    @default(560)
   isNewBranch  Boolean  @default(false)
   openDate     DateTime?
+  rmAssignee   String?
+  amAssignee   String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -65,7 +68,16 @@ model Hotel {
 
   requests Request[]
 
+  @@unique([branchId, name])
   @@index([branchId])
+}
+
+model GoogleSheetsConnection {
+  id             String   @id @default("singleton")
+  refreshToken   String
+  connectedEmail String
+  connectedAt    DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Employee {
@@ -119,6 +131,9 @@ model Request {
   distanceKm          Float?
   distanceCheckPassed Boolean?
 
+  isTravelTimeOverOneHour Boolean?
+  travelTimeEvidenceUrl   String?
+
   isAmTnTwoShift             Boolean?
   isAmTwoBranchesSimultaneous Boolean?
   hasOtherReason             Boolean?
@@ -130,7 +145,8 @@ model Request {
   selectedHotel   Hotel?  @relation(fields: [selectedHotelId], references: [id])
   otherHotelName  String?
 
-  bookingLink   String?
+  choowapBookedAt    DateTime?
+  choowapBookingCode String?
   pricePerNight Int?
   checkInDate   DateTime?
   checkOutDate  DateTime?

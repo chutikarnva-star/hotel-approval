@@ -1,72 +1,94 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { apiFetch } from "@/lib/apiFetch";
 import type { BranchLite } from "@/lib/types";
 
-export default function BranchSearch({
-  onSelect,
-  placeholder,
-}: {
-  onSelect: (branch: BranchLite) => void;
-  placeholder?: string;
-}) {
+export default function BranchSearch({ onSelect }: { onSelect: (branch: BranchLite) => void }) {
   const { idToken } = useAuth();
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<BranchLite[]>([]);
-  const [open, setOpen] = useState(false);
+  const [rmOptions, setRmOptions] = useState<string[]>([]);
+  const [amOptions, setAmOptions] = useState<string[]>([]);
+  const [branchOptions, setBranchOptions] = useState<BranchLite[]>([]);
 
-  async function search(q: string) {
-    setQuery(q);
-    if (q.trim().length < 1) {
-      setResults([]);
-      return;
-    }
-    const res = await apiFetch(idToken, `/api/branches?q=${encodeURIComponent(q)}`);
-    if (res.ok) {
-      const data = await res.json();
-      setResults(data.branches);
-      setOpen(true);
-    }
-  }
+  const [rm, setRm] = useState("");
+  const [am, setAm] = useState("");
+  const [branchId, setBranchId] = useState("");
+
+  useEffect(() => {
+    apiFetch(idToken, "/api/branches/assignees?type=RM")
+      .then((r) => r.json())
+      .then((d) => setRmOptions(d.assignees ?? []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setAm("");
+    setAmOptions([]);
+    setBranchId("");
+    setBranchOptions([]);
+    if (!rm) return;
+    apiFetch(idToken, `/api/branches/assignees?type=AM&rmAssignee=${encodeURIComponent(rm)}`)
+      .then((r) => r.json())
+      .then((d) => setAmOptions(d.assignees ?? []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rm]);
+
+  useEffect(() => {
+    setBranchId("");
+    setBranchOptions([]);
+    if (!am) return;
+    apiFetch(idToken, `/api/branches?assigneeType=AM&assignee=${encodeURIComponent(am)}`)
+      .then((r) => r.json())
+      .then((d) => setBranchOptions(d.branches ?? []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [am]);
 
   return (
-    <div style={{ position: "relative" }}>
-      <input
-        placeholder={placeholder ?? "ค้นหาสาขา..."}
-        value={query}
-        onChange={(e) => search(e.target.value)}
-        onFocus={() => setOpen(true)}
-      />
-      {open && results.length > 0 && (
-        <div
-          className="card"
-          style={{
-            position: "absolute",
-            zIndex: 10,
-            width: "100%",
-            maxHeight: 260,
-            overflowY: "auto",
-            marginTop: 4,
-            padding: 6,
-          }}
-        >
-          {results.map((b) => (
-            <div
-              key={b.id}
-              style={{ padding: "8px 10px", cursor: "pointer", borderRadius: 6 }}
-              onMouseDown={() => {
-                onSelect(b);
-                setQuery(`${b.code} - ${b.name}`);
-                setOpen(false);
-              }}
-            >
-              <strong>{b.code}</strong> - {b.name}
-            </div>
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div>
+        <label>RM</label>
+        <select value={rm} onChange={(e) => setRm(e.target.value)}>
+          <option value="">เลือก RM...</option>
+          {rmOptions.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
           ))}
-        </div>
-      )}
+        </select>
+      </div>
+
+      <div>
+        <label>AM</label>
+        <select value={am} onChange={(e) => setAm(e.target.value)} disabled={!rm}>
+          <option value="">เลือก AM...</option>
+          {amOptions.map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label>สาขา</label>
+        <select
+          value={branchId}
+          onChange={(e) => {
+            setBranchId(e.target.value);
+            const branch = branchOptions.find((b) => b.id === e.target.value);
+            if (branch) onSelect(branch);
+          }}
+          disabled={!am}
+        >
+          <option value="">เลือกสาขา...</option>
+          {branchOptions.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }
