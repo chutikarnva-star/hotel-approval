@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthGate from "@/components/AuthGate";
 import BranchSearch from "@/components/BranchSearch";
+import { ThaiDateSelect, ThaiDateTimeSelect } from "@/components/ThaiDatePicker";
 import { useAuth } from "@/lib/useAuth";
 import { useMe } from "@/lib/useMe";
 import { apiFetch } from "@/lib/apiFetch";
@@ -248,7 +249,8 @@ function NewRequestForm() {
                 }}
               />
               <span>
-                {h.name} · {h.distanceKm ?? "?"} กม. · {h.pricePerNight ?? "?"} บาท/คืน · ระดับ {h.recommendLevel}
+                {h.name} · {h.distanceKm ?? "?"} กม. · {h.pricePerNight ?? "?"} บาท/คืน
+                {h.note && <> · {h.note}</>}
               </span>
             </label>
           ))}
@@ -300,23 +302,24 @@ function NewRequestForm() {
 
       {canProceedToHotel && (
         <div className="card">
-          <h3>รายละเอียดการจอง</h3>
+          <h3>ข้อมูลการจองใน Choowap</h3>
           <label>วันที่-เวลาที่จองใน Choowap</label>
-          <input
-            type="datetime-local"
-            value={choowapBookedAt}
-            onChange={(e) => setChoowapBookedAt(e.target.value)}
-          />
+          <ThaiDateTimeSelect value={choowapBookedAt} onChange={setChoowapBookedAt} />
           <p className="field-hint">ดูจากคอลัมน์ &quot;วันที่จอง&quot; ในหน้ารายการจองของ Choowap</p>
+          <img
+            src="/choowap-booking-guide.jpg"
+            alt="ตัวอย่างคอลัมน์วันที่จองในหน้ารายการจองของ Choowap"
+            style={{ maxWidth: "100%", borderRadius: 8, marginTop: 6, marginBottom: 16 }}
+          />
 
           <label>ราคา/คืน (บาท)</label>
           <input type="number" value={pricePerNight} onChange={(e) => setPricePerNight(e.target.value)} />
 
           <label>วันที่เข้าพัก</label>
-          <input type="date" value={checkInDate} onChange={(e) => setCheckInDate(e.target.value)} />
+          <ThaiDateSelect value={checkInDate} onChange={setCheckInDate} />
 
           <label>วันที่ออก</label>
-          <input type="date" value={checkOutDate} onChange={(e) => setCheckOutDate(e.target.value)} />
+          <ThaiDateSelect value={checkOutDate} onChange={setCheckOutDate} />
 
           {priceDiff > 0 && (
             <>
