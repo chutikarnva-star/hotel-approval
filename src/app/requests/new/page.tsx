@@ -273,6 +273,33 @@ function NewRequestForm() {
 
       {canProceedToHotel && (
         <div className="card">
+          <h3>จองที่พักจริงใน Choowap</h3>
+          <p>
+            นำชื่อโรงแรมในตัวเลือกไปค้นหาในเว็บ Choowap
+            {(useOtherHotel ? otherHotelName : hotels.find((h) => h.id === selectedHotelId)?.name) && (
+              <>
+                {" "}
+                — <strong>{useOtherHotel ? otherHotelName : hotels.find((h) => h.id === selectedHotelId)?.name}</strong>
+              </>
+            )}
+          </p>
+          <a href="https://corp.choowap.com/cjmart" target="_blank" rel="noreferrer" className="btn secondary">
+            เปิดเว็บ Choowap เพื่อจอง
+          </a>
+          <p className="field-hint" style={{ marginTop: 10 }}>
+            ตัวอย่าง: ก็อปปี้ชื่อโรงแรมมาใส่ในช่องค้นหา แล้วกด &quot;ค้นหา&quot;
+          </p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/choowap-search-guide.jpg"
+            alt="ตัวอย่างการค้นหาโรงแรมในเว็บ Choowap"
+            style={{ maxWidth: "100%", borderRadius: 8, marginTop: 6 }}
+          />
+        </div>
+      )}
+
+      {canProceedToHotel && (
+        <div className="card">
           <h3>รายละเอียดการจอง</h3>
           <label>วันที่-เวลาที่จองใน Choowap</label>
           <input
