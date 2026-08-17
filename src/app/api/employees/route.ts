@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   if (body.storeCenterBranchCode) {
     const branch = await prisma.branch.findUnique({ where: { code: body.storeCenterBranchCode } });
     if (!branch) {
-      return NextResponse.json({ error: "ไม่พบ Store Center branch code นี้" }, { status: 400 });
+      return NextResponse.json({ error: "ไม่พบ branch code ของสาขาใกล้บ้านนี้" }, { status: 400 });
     }
     storeCenterBranchId = branch.id;
   }

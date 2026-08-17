@@ -46,7 +46,7 @@ export default function AdminHome() {
         <div className="card">
           <p><Link href="/admin/branches">สาขา &amp; งบต่อคืน</Link></p>
           <p><Link href="/admin/hotels">Master List โรงแรม</Link></p>
-          <p><Link href="/admin/employees">พนักงาน &amp; Store Center</Link></p>
+          <p><Link href="/admin/employees">พนักงาน &amp; สาขาใกล้บ้าน</Link></p>
           <p><Link href="/admin/approvers">ผู้อนุมัติ</Link></p>
           <p><Link href="/admin/reports">รายงานความถี่การจอง</Link></p>
         </div>

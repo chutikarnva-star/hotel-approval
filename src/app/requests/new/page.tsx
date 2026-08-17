@@ -161,7 +161,7 @@ function NewRequestForm() {
       {checkResult && (
         <div className="card">
           <p>
-            <strong>Store Center:</strong> {checkResult.employee.storeCenter.code} - {checkResult.employee.storeCenter.name}
+            <strong>สาขาใกล้บ้าน:</strong> {checkResult.employee.storeCenter.code} - {checkResult.employee.storeCenter.name}
             <br />
             <strong>มีรถบริษัท:</strong> {checkResult.employee.hasCompanyCar ? "มี" : "ไม่มี"}
             <br />
@@ -178,7 +178,7 @@ function NewRequestForm() {
         <div className="card">
           <p className="field-hint">ระยะทางไม่ถึงเกณฑ์ กรุณาตอบคำถามเพิ่มเติมเพื่อตรวจสอบสิทธิ์</p>
 
-          <label>เดินทางจาก Store Center ไปสาขาที่จะไปทำงาน ใช้เวลาเกิน 1 ชั่วโมงหรือไม่?</label>
+          <label>เดินทางจากสาขาใกล้บ้าน ไปสาขาที่จะไปทำงาน ใช้เวลาเกิน 1 ชั่วโมงหรือไม่?</label>
           <YesNo value={isTravelTimeOverOneHour} onChange={setIsTravelTimeOverOneHour} />
           {isTravelTimeOverOneHour && (
             <>
@@ -189,7 +189,7 @@ function NewRequestForm() {
                 placeholder="https://www.google.com/maps/dir/..."
               />
               <p className="field-hint">
-                ลิงก์ต้องแสดงต้นทางเป็น Store Center ของคุณ ปลายทางเป็นสาขาที่จะไปทำงาน
+                ลิงก์ต้องแสดงต้นทางเป็นสาขาใกล้บ้านของคุณ ปลายทางเป็นสาขาที่จะไปทำงาน
                 และเวลาเดินทางเกิน 60 นาที — ผู้อนุมัติจะเปิดตรวจสอบก่อนอนุมัติ
               </p>
             </>
@@ -234,7 +234,11 @@ function NewRequestForm() {
 
       {canProceedToHotel && (
         <div className="card">
-          <h3>เลือกโรงแรม</h3>
+          <h3>ตัวเลือกโรงแรมที่ CJX เคยใช้งาน</h3>
+          <p className="field-hint">
+            ราคาที่พนักงานจองได้โดยไม่ต้องจ่ายส่วนต่างเพิ่มคือ {checkResult?.destinationBranch.budgetPerNight ?? "?"}{" "}
+            บาท/คืน (ไม่รวม Vat)
+          </p>
           {hotels.length === 0 && <p className="field-hint">ไม่มีโรงแรมใน Master List สำหรับสาขานี้</p>}
           {hotels.map((h) => (
             <label key={h.id} style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 400 }}>
@@ -249,7 +253,7 @@ function NewRequestForm() {
                 }}
               />
               <span>
-                {h.name} · {h.distanceKm ?? "?"} กม. · {h.pricePerNight ?? "?"} บาท/คืน
+                {h.name} · {h.distanceKm ?? "?"} กม. · {h.pricePerNight ?? "?"} บาท/คืน (ราคาไม่รวม Vat)
                 {h.note && <> · {h.note}</>}
               </span>
             </label>

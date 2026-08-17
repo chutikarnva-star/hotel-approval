@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "บัญชีนี้ยังไม่ได้ผูกกับรหัสพนักงาน" }, { status: 409 });
   }
   if (!employee.storeCenterBranch) {
-    return NextResponse.json({ error: "ไม่พบ Store Center ของพนักงานนี้ กรุณาติดต่อ admin" }, { status: 409 });
+    return NextResponse.json({ error: "ไม่พบสาขาใกล้บ้านของพนักงานนี้ กรุณาติดต่อ admin" }, { status: 409 });
   }
 
   const body = await request.json().catch(() => null);

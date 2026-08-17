@@ -4,7 +4,7 @@ import { MeProvider } from "@/lib/useMe";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "จองที่พัก - Store Center",
+  title: "จองที่พัก - สาขาใกล้บ้าน",
   description: "ระบบขออนุมัติที่พักสำหรับพนักงานที่ไปทำงานสาขาไกล",
 };
 

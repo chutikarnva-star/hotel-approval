@@ -43,8 +43,8 @@ function EmployeesTable() {
 
   return (
     <div>
-      <h1>พนักงาน &amp; Store Center</h1>
-      <p className="field-hint">นำเข้าสาขา (Branches) ก่อนนำเข้าพนักงาน เพราะต้องอ้างอิงรหัสสาขาของ Store Center</p>
+      <h1>พนักงาน &amp; สาขาใกล้บ้าน</h1>
+      <p className="field-hint">นำเข้าสาขา (Branches) ก่อนนำเข้าพนักงาน เพราะต้องอ้างอิงรหัสสาขาของสาขาใกล้บ้าน</p>
       <CsvImport
         importUrl="/api/employees/import"
         expectedHeaders="code,name,department,amTeam,codeNickname,storeCenterBranchCode,hasCompanyCar"
@@ -57,7 +57,7 @@ function EmployeesTable() {
               <th>รหัสพนักงาน</th>
               <th>ชื่อ</th>
               <th>หน่วยงาน</th>
-              <th>Store Center</th>
+              <th>สาขาใกล้บ้าน</th>
               <th>มีรถ</th>
               <th>อีเมล (ผูกแล้ว)</th>
             </tr>

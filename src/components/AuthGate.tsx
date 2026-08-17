@@ -18,7 +18,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     return (
       <div className="container" style={{ textAlign: "center", paddingTop: 80 }}>
         <h1>ระบบขออนุมัติที่พัก</h1>
-        <p style={{ color: "var(--muted)" }}>สำหรับพนักงานที่ไปทำงานสาขาไกล Store Center</p>
+        <p style={{ color: "var(--muted)" }}>สำหรับพนักงานที่ไปทำงานสาขาไกลจากสาขาใกล้บ้าน</p>
         <button className="btn" onClick={signIn} style={{ marginTop: 24 }}>
           เข้าสู่ระบบด้วย Google
         </button>
