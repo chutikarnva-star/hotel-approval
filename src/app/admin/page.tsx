@@ -46,12 +46,107 @@ export default function AdminHome() {
         <div className="card">
           <p><Link href="/admin/branches">สาขา &amp; งบต่อคืน</Link></p>
           <p><Link href="/admin/hotels">Master List โรงแรม</Link></p>
+          <p><Link href="/admin/hotel-candidates">โรงแรมใหม่รอตรวจสอบ</Link></p>
           <p><Link href="/admin/employees">พนักงาน &amp; สาขาใกล้บ้าน</Link></p>
           <p><Link href="/admin/approvers">ผู้อนุมัติ</Link></p>
           <p><Link href="/admin/reports">รายงานความถี่การจอง</Link></p>
         </div>
+        <PendingDigestTest />
       </div>
     </AdminGate>
+  );
+}
+
+interface DigestResult {
+  approver: string;
+  email: string | null;
+  pendingCount: number;
+  sent: boolean;
+  skippedReason?: string;
+}
+
+function PendingDigestTest() {
+  const { idToken } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [results, setResults] = useState<DigestResult[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function send() {
+    if (!idToken) return;
+    setBusy(true);
+    setResults(null);
+    setError(null);
+    const res = await apiFetch(idToken, "/api/admin/send-pending-digest", { method: "POST" });
+    const data = await res.json().catch(() => null);
+    setBusy(false);
+    if (res.ok) {
+      setResults(data.results);
+    } else {
+      setError(data?.error ?? "ส่งอีเมลไม่สำเร็จ");
+    }
+  }
+
+  return (
+    <div className="card">
+      <h3>อีเมลสรุปคำขอค้างอนุมัติ (ทดสอบ)</h3>
+      <p className="field-hint">
+        ยังเป็นการส่งแบบกดทดสอบเอง — ยังไม่ได้ตั้งให้ส่งอัตโนมัติทุกวัน 17:00
+      </p>
+      <div style={{ display: "flex", gap: 10 }}>
+        <button className="btn" disabled={busy} onClick={send}>
+          {busy ? "กำลังส่ง..." : "ส่งอีเมลสรุปตอนนี้"}
+        </button>
+        <TestEmailButton />
+      </div>
+      {error && <p style={{ color: "var(--red)", marginTop: 10 }}>{error}</p>}
+      {results && (
+        <table style={{ marginTop: 12 }}>
+          <thead>
+            <tr>
+              <th>แผนก</th>
+              <th>อีเมล</th>
+              <th>ค้างอนุมัติ</th>
+              <th>สถานะ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((r) => (
+              <tr key={r.approver}>
+                <td>{r.approver}</td>
+                <td>{r.email ?? "-"}</td>
+                <td>{r.pendingCount}</td>
+                <td>{r.sent ? "ส่งแล้ว" : r.skippedReason ?? "ไม่มีคำขอค้าง"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function TestEmailButton() {
+  const { idToken, user } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function send() {
+    if (!idToken) return;
+    setBusy(true);
+    setMessage(null);
+    const res = await apiFetch(idToken, "/api/admin/test-email", { method: "POST" });
+    const data = await res.json().catch(() => null);
+    setBusy(false);
+    setMessage(res.ok ? `ส่งไปที่ ${data.sentTo} แล้ว ลองเช็คอีเมล` : `ส่งไม่สำเร็จ: ${data?.error ?? "unknown error"}`);
+  }
+
+  return (
+    <div>
+      <button className="btn secondary" disabled={busy} onClick={send}>
+        {busy ? "กำลังส่ง..." : `ส่งอีเมลทดสอบไปที่ ${user?.email ?? "ตัวเอง"}`}
+      </button>
+      {message && <p className="field-hint" style={{ marginTop: 6 }}>{message}</p>}
+    </div>
   );
 }
 

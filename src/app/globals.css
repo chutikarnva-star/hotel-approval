@@ -1,28 +1,44 @@
 :root {
-  --bg: #f7f7fb;
+  --bg: #f4f6fb;
   --card: #ffffff;
-  --text: #1a1a2e;
+  --text: #16182c;
   --muted: #6b7280;
-  --border: #e5e7eb;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --green: #16a34a;
-  --green-bg: #dcfce7;
-  --yellow: #ca8a04;
-  --yellow-bg: #fef9c3;
-  --red: #dc2626;
-  --red-bg: #fee2e2;
+  --muted-soft: #9aa1b1;
+  --border: #e7e9f2;
+  --border-soft: #eef0f7;
+  --primary: #3457e6;
+  --primary-hover: #2a45c4;
+  --primary-soft: #eaefff;
+  --primary-soft-border: #c9d6ff;
+  --green: #148a4b;
+  --green-bg: #e2f6ea;
+  --yellow: #b3790a;
+  --yellow-bg: #fef2d9;
+  --red: #d13438;
+  --red-bg: #fbe4e4;
+  --radius-lg: 16px;
+  --radius: 12px;
+  --radius-sm: 9px;
+  --shadow-sm: 0 1px 2px rgba(22, 24, 44, 0.05);
+  --shadow-md: 0 4px 16px rgba(22, 24, 44, 0.07);
+  --shadow-lg: 0 12px 32px rgba(22, 24, 44, 0.12);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, "Segoe UI", "Noto Sans Thai", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-thai), -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -30,60 +46,152 @@ a {
   text-decoration: none;
 }
 
+a:hover {
+  text-decoration: underline;
+}
+
+h1, h2, h3 {
+  line-height: 1.35;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+h1 { font-size: 24px; }
+h2 { font-size: 19px; }
+h3 { font-size: 16px; margin-bottom: 10px; }
+
 .container {
-  max-width: 880px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
+  padding: 28px 20px 72px;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 20px 14px 56px;
+  }
 }
 
 .card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 22px;
   margin-bottom: 16px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 16px;
+  }
+}
+
+.card.clickable {
+  cursor: pointer;
+}
+
+.card.clickable:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: var(--primary-soft-border);
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
   background: var(--primary);
   color: white;
   font-size: 14px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .btn:hover {
   background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .btn.secondary {
   background: white;
   color: var(--text);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.btn.secondary:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary-soft-border);
+  color: var(--primary-hover);
 }
 
 .btn.danger {
   background: var(--red);
 }
 
+.btn.danger:hover {
+  background: #b32c2f;
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 input, select, textarea {
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 13px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: var(--radius-sm);
+  background: white;
+  color: var(--text);
+  font-size: 16px;
   font-family: inherit;
-  margin-top: 4px;
+  margin-top: 6px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:hover, select:hover, textarea:hover {
+  border-color: var(--muted-soft);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted-soft);
+}
+
+input[type="radio"], input[type="checkbox"] {
+  width: auto;
+  accent-color: var(--primary);
+  transform: scale(1.15);
+  margin-top: 0;
 }
 
 label {
@@ -91,13 +199,40 @@ label {
   font-size: 13px;
   font-weight: 600;
   color: var(--muted);
-  margin-top: 14px;
+  margin-top: 16px;
+  margin-bottom: 2px;
 }
 
 .field-hint {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--muted-soft);
+  margin-top: 5px;
+  line-height: 1.5;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.option-row:hover {
+  border-color: var(--primary-soft-border);
+  background: var(--primary-soft);
+}
+
+.option-row.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
 }
 
 .thai-date-trigger {
@@ -105,20 +240,35 @@ label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 12px;
+  padding: 10px 13px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
   font-family: inherit;
-  margin-top: 4px;
+  margin-top: 6px;
   background: white;
   color: var(--text);
   cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.thai-date-trigger:hover {
+  border-color: var(--muted-soft);
 }
 
 .thai-time-select {
-  width: 72px;
+  width: 78px;
   flex: none;
+}
+
+@media (max-width: 480px) {
+  .thai-date-time-row {
+    flex-wrap: wrap;
+  }
+
+  .thai-time-select {
+    width: 84px;
+  }
 }
 
 .thai-calendar-backdrop {
@@ -129,23 +279,23 @@ label {
 
 .thai-calendar-popup {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
   z-index: 21;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  padding: 12px;
-  width: 260px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 14px;
+  width: 266px;
 }
 
 .thai-calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
 .thai-calendar-header button {
@@ -154,64 +304,142 @@ label {
   font-size: 18px;
   cursor: pointer;
   color: var(--text);
-  padding: 2px 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.thai-calendar-header button:hover {
+  background: var(--primary-soft);
 }
 
 .thai-calendar-weekdays,
 .thai-calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 3px;
   text-align: center;
 }
 
 .thai-calendar-weekdays span {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--muted-soft);
   padding: 4px 0;
+  font-weight: 600;
 }
 
 .thai-calendar-days button {
   border: none;
   background: none;
-  padding: 6px 0;
-  border-radius: 6px;
+  padding: 7px 0;
+  border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
   color: var(--text);
+  transition: background 0.15s ease;
 }
 
 .thai-calendar-days button:hover {
-  background: var(--bg);
+  background: var(--primary-soft);
 }
 
 .thai-calendar-days button.selected {
   background: var(--primary);
   color: white;
+  font-weight: 700;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-soft);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text);
+  margin-right: 8px;
+}
+
+.topbar-brand .mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
 }
 
 .topbar nav {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 4px;
   font-size: 14px;
   font-weight: 600;
+  flex: 1;
+}
+
+.topbar nav a {
+  color: var(--muted);
+  padding: 7px 12px;
+  border-radius: 999px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.topbar nav a:hover {
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+  text-decoration: none;
+}
+
+.topbar nav a.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .topbar nav {
+    gap: 2px;
+    order: 3;
+    width: 100%;
+  }
 }
 
 .badge {
   display: inline-flex;
-  padding: 3px 10px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
+}
+
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .badge.GREEN { background: var(--green-bg); color: var(--green); }
@@ -226,8 +454,24 @@ table {
 
 th, td {
   text-align: left;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+tbody tr {
+  transition: background 0.15s ease;
+}
+
+tbody tr:hover {
+  background: var(--bg);
 }
 
 .stat-row {
@@ -239,13 +483,16 @@ th, td {
 .stat-tile {
   flex: 1;
   min-width: 120px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 16px;
   text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-tile .num {
   font-size: 26px;
   font-weight: 800;
+  color: var(--primary);
 }

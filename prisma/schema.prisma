@@ -50,6 +50,18 @@ model Branch {
   employeesAtHome    Employee[] @relation("StoreCenterBranch")
   requestsAsDestination Request[] @relation("DestinationBranch")
   requestsAsStoreCenter Request[] @relation("StoreCenterBranchOnRequest")
+  hotelCandidateReviews HotelCandidateReview[]
+}
+
+model HotelCandidateReview {
+  id         String   @id @default(cuid())
+  branchId   String
+  branch     Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  hotelName  String
+  dismissed  Boolean  @default(false)
+  reviewedAt DateTime @default(now())
+
+  @@unique([branchId, hotelName])
 }
 
 model Hotel {
@@ -150,6 +162,9 @@ model Request {
   pricePerNight Int?
   checkInDate   DateTime?
   checkOutDate  DateTime?
+  guestCount      Int?
+  roomCount       Int?
+  soloGuestReason String?
 
   isHotelInMasterList Boolean?
   budgetPerNight       Int?

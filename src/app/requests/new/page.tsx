@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthGate from "@/components/AuthGate";
 import BranchSearch from "@/components/BranchSearch";
@@ -40,11 +40,15 @@ function NewRequestForm() {
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
   const [useOtherHotel, setUseOtherHotel] = useState(false);
   const [otherHotelName, setOtherHotelName] = useState("");
+  const [hotelNameCopied, setHotelNameCopied] = useState(false);
 
   const [choowapBookedAt, setChoowapBookedAt] = useState("");
   const [pricePerNight, setPricePerNight] = useState("");
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
+  const [guestCount, setGuestCount] = useState("");
+  const [roomCount, setRoomCount] = useState("");
+  const [soloGuestReason, setSoloGuestReason] = useState("");
   const [guestWillingToPayDiff, setGuestWillingToPayDiff] = useState<boolean | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -96,6 +100,23 @@ function NewRequestForm() {
       ? Math.max(0, Number(pricePerNight) - checkResult.destinationBranch.budgetPerNight)
       : 0;
 
+  const budgetCap = checkResult?.destinationBranch.budgetPerNight;
+  const sortedHotels = useMemo(() => {
+    if (budgetCap == null) return hotels;
+    const withinBudget = (h: HotelLite) => h.pricePerNight != null && h.pricePerNight <= budgetCap;
+    return [...hotels].sort((a, b) => {
+      const aWithin = withinBudget(a);
+      const bWithin = withinBudget(b);
+      if (aWithin !== bWithin) return aWithin ? -1 : 1;
+      if (aWithin) {
+        return (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity);
+      }
+      const priceDiff = (a.pricePerNight ?? Infinity) - (b.pricePerNight ?? Infinity);
+      if (priceDiff !== 0) return priceDiff;
+      return (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity);
+    });
+  }, [hotels, budgetCap]);
+
   async function submit() {
     setSubmitting(true);
     setError(null);
@@ -115,6 +136,9 @@ function NewRequestForm() {
         pricePerNight: pricePerNight ? Number(pricePerNight) : null,
         checkInDate,
         checkOutDate,
+        guestCount: guestCount ? Number(guestCount) : null,
+        roomCount: roomCount ? Number(roomCount) : null,
+        soloGuestReason,
         guestWillingToPayDiff,
       }),
     });
@@ -145,11 +169,14 @@ function NewRequestForm() {
     pricePerNight &&
     checkInDate &&
     checkOutDate &&
+    guestCount &&
+    roomCount &&
+    (Number(guestCount) !== 1 || soloGuestReason.trim()) &&
     (priceDiff === 0 || guestWillingToPayDiff != null);
 
   return (
     <div>
-      <h1>ขอจองที่พัก</h1>
+      <h1>ฟอร์มขออนุมัติจองที่พัก</h1>
 
       <div className="card">
         <label>สาขาที่จะไปทำงาน</label>
@@ -240,11 +267,13 @@ function NewRequestForm() {
             บาท/คืน (ไม่รวม Vat)
           </p>
           {hotels.length === 0 && <p className="field-hint">ไม่มีโรงแรมใน Master List สำหรับสาขานี้</p>}
-          {hotels.map((h) => (
-            <label key={h.id} style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 400 }}>
+          {sortedHotels.map((h) => (
+            <label
+              key={h.id}
+              className={`option-row${!useOtherHotel && selectedHotelId === h.id ? " selected" : ""}`}
+            >
               <input
                 type="radio"
-                style={{ width: "auto" }}
                 checked={!useOtherHotel && selectedHotelId === h.id}
                 onChange={() => {
                   setUseOtherHotel(false);
@@ -253,18 +282,20 @@ function NewRequestForm() {
                 }}
               />
               <span>
-                {h.name} · {h.distanceKm ?? "?"} กม. · {h.pricePerNight ?? "?"} บาท/คืน (ราคาไม่รวม Vat)
-                {h.note && <> · {h.note}</>}
+                <span style={{ fontWeight: 700 }}>
+                  {h.name} · ระยะห่างจากสาขา {h.distanceKm ?? "?"} กม. · {h.pricePerNight ?? "?"} บาท/คืน (ราคาไม่รวม Vat)
+                </span>
+                {h.note && (
+                  <>
+                    <br />
+                    <span style={{ fontWeight: 300, color: "var(--muted)", fontSize: 13 }}>หมายเหตุ : {h.note}</span>
+                  </>
+                )}
               </span>
             </label>
           ))}
-          <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 400, marginTop: 10 }}>
-            <input
-              type="radio"
-              style={{ width: "auto" }}
-              checked={useOtherHotel}
-              onChange={() => setUseOtherHotel(true)}
-            />
+          <label className={`option-row${useOtherHotel ? " selected" : ""}`}>
+            <input type="radio" checked={useOtherHotel} onChange={() => setUseOtherHotel(true)} />
             <span>โรงแรมอื่นที่ไม่อยู่ใน Master List</span>
           </label>
           {useOtherHotel && (
@@ -280,15 +311,42 @@ function NewRequestForm() {
       {canProceedToHotel && (
         <div className="card">
           <h3>จองที่พักจริงใน Choowap</h3>
-          <p>
-            นำชื่อโรงแรมในตัวเลือกไปค้นหาในเว็บ Choowap
-            {(useOtherHotel ? otherHotelName : hotels.find((h) => h.id === selectedHotelId)?.name) && (
-              <>
-                {" "}
-                — <strong>{useOtherHotel ? otherHotelName : hotels.find((h) => h.id === selectedHotelId)?.name}</strong>
-              </>
-            )}
-          </p>
+          <p>นำชื่อโรงแรมด้านล่างไปค้นหาในเว็บ Choowap</p>
+          {(() => {
+            const hotelName = useOtherHotel ? otherHotelName : hotels.find((h) => h.id === selectedHotelId)?.name;
+            if (!hotelName) return null;
+            return (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  background: "var(--yellow-bg)",
+                  border: "1px solid var(--yellow)",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  marginBottom: 14,
+                }}
+              >
+                <span style={{ fontSize: 16, fontWeight: 700, flex: 1 }}>{hotelName}</span>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(hotelName);
+                      setHotelNameCopied(true);
+                      setTimeout(() => setHotelNameCopied(false), 1500);
+                    } catch {
+                      setHotelNameCopied(false);
+                    }
+                  }}
+                >
+                  {hotelNameCopied ? "คัดลอกแล้ว" : "คัดลอกชื่อโรงแรม"}
+                </button>
+              </div>
+            );
+          })()}
           <a href="https://corp.choowap.com/cjmart" target="_blank" rel="noreferrer" className="btn secondary">
             เปิดเว็บ Choowap เพื่อจอง
           </a>
@@ -301,6 +359,11 @@ function NewRequestForm() {
             alt="ตัวอย่างการค้นหาโรงแรมในเว็บ Choowap"
             style={{ maxWidth: "100%", borderRadius: 8, marginTop: 6 }}
           />
+          <p style={{ marginTop: 12 }}>
+            <a href="/choowap-booking-guide.pdf" target="_blank" rel="noreferrer">
+              วิธีการจองที่พักผ่าน Choowap ดูได้ที่นี่
+            </a>
+          </p>
         </div>
       )}
 
@@ -324,6 +387,28 @@ function NewRequestForm() {
 
           <label>วันที่ออก</label>
           <ThaiDateSelect value={checkOutDate} onChange={setCheckOutDate} />
+
+          <label>จำนวนผู้เข้าพัก</label>
+          <input
+            type="number"
+            min={1}
+            value={guestCount}
+            onChange={(e) => setGuestCount(e.target.value)}
+          />
+          {Number(guestCount) === 1 && (
+            <>
+              <label>เหตุผลที่พักคนเดียว</label>
+              <input value={soloGuestReason} onChange={(e) => setSoloGuestReason(e.target.value)} />
+            </>
+          )}
+
+          <label>จำนวนห้องที่จอง</label>
+          <input
+            type="number"
+            min={1}
+            value={roomCount}
+            onChange={(e) => setRoomCount(e.target.value)}
+          />
 
           {priceDiff > 0 && (
             <>

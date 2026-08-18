@@ -7,6 +7,9 @@ export interface StatusFlagInput {
   eligibilityPath: EligibilityPath;
   isHotelInMasterList: boolean | null;
   priceDiff: number | null;
+  guestCount: number | null;
+  roomCount: number | null;
+  soloGuestReason: string | null;
 }
 
 export interface StatusFlagOutput {
@@ -30,6 +33,14 @@ export function computeStatusFlag(input: StatusFlagInput): StatusFlagOutput {
   }
   if (input.eligibilityPath === "travel_time") {
     return { flag: "YELLOW", reason: "ผ่านเกณฑ์ด้วยเวลาเดินทางเกิน 1 ชม. ต้องตรวจสอบหลักฐาน Google Maps" };
+  }
+  if (input.guestCount === 1 && input.roomCount === 1) {
+    return {
+      flag: "YELLOW",
+      reason: `พัก 1 คนต่อ 1 ห้อง อาจสิ้นเปลืองงบประมาณ ต้องตรวจสอบเหตุผล${
+        input.soloGuestReason ? `: ${input.soloGuestReason}` : ""
+      }`,
+    };
   }
   if (input.priceDiff != null && input.priceDiff > 0) {
     return { flag: "YELLOW", reason: `ราคาเกินงบ ${input.priceDiff} บาท/คืน` };

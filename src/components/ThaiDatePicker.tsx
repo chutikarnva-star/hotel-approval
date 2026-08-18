@@ -190,7 +190,7 @@ export function ThaiDateTimeSelect({
   }
 
   return (
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+    <div className="thai-date-time-row" style={{ display: "flex", gap: 8, alignItems: "center" }}>
       <ThaiDateSelect value={datePart ?? ""} onChange={emitDate} />
       <select
         className="thai-time-select"

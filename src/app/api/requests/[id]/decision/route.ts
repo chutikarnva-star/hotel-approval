@@ -16,6 +16,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
   if (action !== "APPROVED" && action !== "REJECTED") {
     return NextResponse.json({ error: "action must be APPROVED or REJECTED" }, { status: 400 });
   }
+  if (action === "REJECTED" && !body?.comment?.trim()) {
+    return NextResponse.json({ error: "กรุณาระบุเหตุผลที่ไม่อนุมัติ" }, { status: 400 });
+  }
 
   const found = await prisma.request.findUnique({ where: { id: params.id } });
   if (!found) return NextResponse.json({ error: "Not found" }, { status: 404 });

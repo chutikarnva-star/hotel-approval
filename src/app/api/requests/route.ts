@@ -59,6 +59,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "กรุณาเลือกโรงแรมหรือระบุชื่อโรงแรม" }, { status: 400 });
   }
 
+  const guestCount = body.guestCount != null ? Number(body.guestCount) : null;
+  const roomCount = body.roomCount != null ? Number(body.roomCount) : null;
+  if (!guestCount || guestCount < 1) {
+    return NextResponse.json({ error: "กรุณาระบุจำนวนผู้เข้าพัก" }, { status: 400 });
+  }
+  if (!roomCount || roomCount < 1) {
+    return NextResponse.json({ error: "กรุณาระบุจำนวนห้องที่จอง" }, { status: 400 });
+  }
+  if (guestCount === 1 && !body.soloGuestReason?.trim()) {
+    return NextResponse.json({ error: "กรุณาระบุเหตุผลที่พักคนเดียว" }, { status: 400 });
+  }
+
   const distanceKm = haversineKm(
     employee.storeCenterBranch.lat,
     employee.storeCenterBranch.lng,
@@ -101,6 +113,9 @@ export async function POST(request: Request) {
     eligibilityPath: eligibility.path,
     isHotelInMasterList,
     priceDiff,
+    guestCount,
+    roomCount,
+    soloGuestReason: guestCount === 1 ? body.soloGuestReason?.trim() || null : null,
   });
 
   const approver = await prisma.approver.findUnique({ where: { department: employee.department } });
@@ -129,6 +144,9 @@ export async function POST(request: Request) {
       pricePerNight,
       checkInDate: body.checkInDate ? new Date(body.checkInDate) : null,
       checkOutDate: body.checkOutDate ? new Date(body.checkOutDate) : null,
+      guestCount,
+      roomCount,
+      soloGuestReason: guestCount === 1 ? body.soloGuestReason?.trim() || null : null,
       isHotelInMasterList,
       budgetPerNight,
       priceDiff,
